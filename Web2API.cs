@@ -20,6 +20,32 @@ using Newtonsoft.Json;
 
 namespace Web2API
 {
+
+    /*
+     Author         : Shubham Gore
+    CommentStamp    : March 31, 2021
+
+    Introduction :
+
+    Each class (Azure Function, mostly a http web-hook ) inherit the CommonFunctions class where I have defined the core functionality in separate functions.
+    
+    [FunctionName("xxxxx")]
+
+    The above FunctionName attribute marks the method as a function entry point. 
+
+    e.g. 
+    See below the first function.   
+    
+    ------>>>>     [FunctionName("email")]
+    
+    means "email" is name of api end-point :
+    https://web2api.azurewebsites.net/api/email?email=Dushyantgmail.com
+
+    https://<Name of Azure Function>.azurewebsites.net/api/<end-point name>?<QueryString parameters, if any>
+
+
+     
+     */
     public class email : CommonFunctions
     {
         [FunctionName("email")]
