@@ -15,9 +15,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Protocols;
 using Newtonsoft.Json;
-using NLog.Internal;
+
 
 namespace Web2API
 {
@@ -293,7 +292,7 @@ namespace Web2API
         public static bool checkMXRecord(string domain)
         {
 
-            WebRequest request = WebRequest.Create(ConfigurationManager.AppSettings["NSUrl"] + domain);
+            WebRequest request = WebRequest.Create("https://www.whatsmydns.net/dns-lookup/mx-records?query=" + domain + "&server=google");
             WebResponse response = request.GetResponse();
             string MXEntryInPage = "";
 
@@ -307,10 +306,9 @@ namespace Web2API
 
 
             }
-            return !MXEntryInPage.Contains("No mail servers found.");
+            return !MXEntryInPage.Contains(domain + ". IN MX\n<strong>;ANSWER</strong>\n;AUTHORITY");
         }
-
-            public static string PullData(string city)
+        public static string PullData(string city)
         {
 
             WebRequest request = WebRequest.Create(ConfigurationManager.AppSettings["LatLonIndianCities"] + city);
