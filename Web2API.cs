@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -174,7 +175,74 @@ namespace Web2API
 
 }
 
+
+    public class News : CommonFunctions
+    {
+        [FunctionName("News")]
+        public static async Task<HttpResponseMessage> RunAsync(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
+            ILogger log, ExecutionContext context)
+        {
+            log.LogInformation("C# HTTP trigger function processed a request.");
+            var response = new HttpResponseMessage(HttpStatusCode.OK);
+           // string q = req.Query["q"];
+
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            dynamic data = JsonConvert.DeserializeObject(requestBody);
+            //q = q ?? data?.name;
+
+            string responseMessage = FetchNewsFromGoogle();
+
+            Stream s = new MemoryStream(Encoding.UTF8.GetBytes(responseMessage ?? ""));
+
+
+            response.Content = new StreamContent(s);
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html");
+            return response;
+
+        }
+
+
+    }
+
     public class CommonFunctions {
+
+        public static string FetchNewsFromGoogle()
+        {
+            string url = "https://news.google.com/topstories?gl=IN&hl=en-IN&ceid=IN:en";
+
+            WebRequest web = WebRequest.Create(url);
+
+            WebResponse response = web.GetResponse();
+            string rawNews = "";
+            StringBuilder sb = new StringBuilder();
+
+            using (Stream dataStream = response.GetResponseStream())
+            {
+                // Open the stream using a StreamReader for easy access.
+                StreamReader reader = new StreamReader(dataStream);
+                // Read the content.
+                rawNews = reader.ReadToEnd();
+
+                Regex rx = new Regex("\"[^\"]{3,}\",\"[^\"]{3,}\",[[][0-9]{10}][^0]{1,2},null,\"http[^\"]{3,}\"");
+
+
+                MatchCollection collection = rx.Matches(rawNews);
+
+                for (int i = 0; i < collection.Count; i++)
+                {
+                    string payload = collection[i].ToString();
+                    string[] coll = payload.Split('"');
+
+                    sb.Append(String.Format("<div id=\"item{0}\"><a href=\"{1}\">{2}</a></div><br/><br/>", i, coll[5], coll[1]));
+
+                }
+
+                return sb.ToString();
+            }
+         
+             
+        }
 
         public static ArrayList SmartTechnique(string emailField)
         {
